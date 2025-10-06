@@ -1,5 +1,8 @@
 import express from "express";
 import cors from "cors";
+import mongoose from "mongoose";
+import "dotenv/config";
+
 import { errorHandler } from "./middleware/errorHandler.js";
 import statusRouter from "./routes/status.js";
 
@@ -15,6 +18,23 @@ app.use("/api/status", statusRouter);
 app.use(errorHandler);
 
 const PORT = process.env.PORT ?? 5000;
-app.listen(PORT, () => {
-  console.log(`Server running on http://localhost:${PORT}`);
-});
+const MONGO_URI = process.env.MONGO_URI;
+
+const startServer = async () => {
+  try {
+    if (!MONGO_URI) {
+      console.error("MONGO_URI is not set.");
+      process.exit(1);
+    }
+    await mongoose.connect(MONGO_URI);
+    console.log("Connected to MongoDB");
+    app.listen(PORT, () => {
+      console.log(`Server listening on http://localhost:${PORT}`);
+    });
+  } catch (error) {
+    console.error("Failed to start server:", error);
+    process.exit(1);
+  }
+};
+
+startServer();

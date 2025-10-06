@@ -4,10 +4,10 @@ const router = express.Router();
 
 // api/status
 router.get("/", (req, res) => {
-  const uptimeSeconds = process.uptime();
+  const uptimeSeconds = Math.floor(process.uptime());
   res.json({
     status: "ok",
-    uptime: `${Math.floor(uptimeSeconds)}s`,
+    uptime: `${uptimeSeconds}s`,
     timestamp: new Date().toISOString(),
   });
 });
