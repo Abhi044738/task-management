@@ -6,6 +6,7 @@ import "dotenv/config";
 import { errorHandler } from "./middleware/errorHandler.js";
 import { statusRouter } from "./routes/status.js";
 import { authRouter } from "./routes/auth.js";
+import { protectedRouter } from "./routes/test.js";
 
 const app = express();
 
@@ -16,6 +17,7 @@ app.use(express.json());
 // Routes
 app.use("/api/status", statusRouter);
 app.use("/api/auth", authRouter);
+app.use("/api/protected", protectedRouter);
 
 app.use(errorHandler);
 
