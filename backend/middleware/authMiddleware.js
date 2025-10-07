@@ -15,8 +15,7 @@ export const protect = async (req, res, next) => {
       req.user = await User.findById(decoded.id).select("-password");
       next();
     } else {
-      res.status(401);
-      throw new Error("Not authorized");
+      return res.status(401).json({ message: "Not authorized, no token" });
     }
   } catch (error) {
     console.error("Auth Middleware Error:", error.message);
