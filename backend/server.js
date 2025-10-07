@@ -2,14 +2,26 @@ import express from "express";
 import cors from "cors";
 import mongoose from "mongoose";
 import "dotenv/config";
+import http from "http";
+import { Server } from "socket.io";
 
 import { errorHandler } from "./middleware/errorHandler.js";
 import { statusRouter } from "./routes/status.js";
 import { authRouter } from "./routes/auth.js";
 import { protectedRouter } from "./routes/test.js";
 import { taskRouter } from "./routes/task.js";
+import { setupSocket } from "./socket.js";
+import { notificationRouter } from "./routes/notification.js";
 
 const app = express();
+const server = http.createServer(app);
+
+const io = new Server(server, {
+  cors: {
+    origin: "*",
+    methods: ["GET", "POST"],
+  },
+});
 
 // Middleware
 app.use(cors());
@@ -20,8 +32,12 @@ app.use("/api/status", statusRouter);
 app.use("/api/auth", authRouter);
 app.use("/api/protected", protectedRouter);
 app.use("/api/tasks", taskRouter);
+app.use("/api/notifications", notificationRouter);
 
 app.use(errorHandler);
+
+app.set("io", io);
+setupSocket(io);
 
 const PORT = process.env.PORT ?? 5000;
 const MONGO_URI = process.env.MONGO_URI;
@@ -34,7 +50,7 @@ const startServer = async () => {
     }
     await mongoose.connect(MONGO_URI);
     console.log("Connected to MongoDB");
-    app.listen(PORT, () => {
+    server.listen(PORT, () => {
       console.log(`Server listening on http://localhost:${PORT}`);
     });
   } catch (error) {
