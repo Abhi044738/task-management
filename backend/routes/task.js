@@ -3,6 +3,7 @@ import { protect } from "../middleware/authMiddleware.js";
 import { Task } from "../models/Task.js";
 import mongoose from "mongoose";
 import { Notification } from "../models/Notification.js";
+import { User } from "../models/User.js";
 
 const router = express.Router();
 
@@ -21,6 +22,27 @@ router.post("/", protect, async (req, res) => {
   const io = req.app.get("io");
   try {
     const { title, description, dueDate, priority, assignedTo } = req.body;
+
+    if (assignedTo !== undefined && assignedTo !== null) {
+      if (!mongoose.Types.ObjectId.isValid(assignedTo)) {
+        return res.status(400).json({
+          success: false,
+          message: "Validation failed",
+          errors: { assignedTo: "assignedTo must be a valid user id" },
+        });
+      }
+
+      const assignee = await User.findById(assignedTo).select(
+        "_id username email"
+      );
+      if (!assignee) {
+        return res.status(400).json({
+          success: false,
+          message: "Validation failed",
+          errors: { assignedTo: "No user found with this id" },
+        });
+      }
+    }
 
     if (!title) {
       return res
