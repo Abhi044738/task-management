@@ -1,24 +1,32 @@
-import { Link, useLocation } from "react-router-dom";
+import { Link } from "react-router-dom";
 
-export default function Navbar() {
-  const location = useLocation();
-
-  const linkClass = (path) =>
-    `px-3 py-2 font-medium ${
-      location.pathname === path
-        ? "text-blue-400 border-b-2 border-blue-400"
-        : "text-gray-300 hover:text-blue-400"
-    } transition`;
-
+export default function Navbar({ isLoggedIn = false }) {
   return (
-    <nav className="fixed top-0 left-0 w-full bg-gray-800 shadow-md z-50">
-      <div className="max-w-6xl mx-auto px-6 py-3 flex justify-center space-x-6">
-        <Link to="/" className={linkClass("/")}>
-          Home
-        </Link>
-        <Link to="/about" className={linkClass("/about")}>
-          About
-        </Link>
+    <nav className="bg-gray-800 text-white shadow sticky top-0 z-50">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex flex-col sm:flex-row justify-between items-center">
+        <div className="font-bold text-lg mb-2 sm:mb-0">Task Manager</div>
+        <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-4">
+          <Link className="hover:text-blue-400" to="/">
+            Home
+          </Link>
+          <Link className="hover:text-blue-400" to="/about">
+            About
+          </Link>
+          {isLoggedIn ? (
+            <Link className="hover:text-blue-400" to="/dashboard">
+              Dashboard
+            </Link>
+          ) : (
+            <>
+              <Link className="hover:text-blue-400" to="/login">
+                Login
+              </Link>
+              <Link className="hover:text-blue-400" to="/register">
+                Register
+              </Link>
+            </>
+          )}
+        </div>
       </div>
     </nav>
   );
