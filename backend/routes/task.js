@@ -213,11 +213,15 @@ router.put("/:id", protect, async (req, res) => {
     const assignee = await User.findById(assignedTo).select(
       "_id username email"
     );
+    const creater = await User.findById(updatedTask.user).select(
+      "_id username email"
+    );
     const newUpdatedTask = {
       ...task.toObject(),
-      user: req.user,
+      user: creater,
       assignedTo: assignee,
     };
+    console.log(newUpdatedTask);
     emit(io, `task_${updatedTask._id}`, "taskUpdated", newUpdatedTask);
     emit(io, String(updatedTask.user), "taskUpdated", newUpdatedTask);
     if (updatedTask.assignedTo)
