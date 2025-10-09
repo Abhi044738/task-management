@@ -42,8 +42,8 @@ router.post("/", protect, async (req, res) => {
           errors: { assignedTo: "No user found with this id" },
         });
       }
+      console.log("this ", assignee);
     }
-
     if (!title) {
       return res
         .status(400)
@@ -64,9 +64,18 @@ router.post("/", protect, async (req, res) => {
       dueDate,
       priority,
     });
-    emit(io, String(req.user._id), "taskCreated", task);
-    emit(io, `task_${task._id}`, "taskCreated", task);
-
+    const assignee = await User.findById(assignedTo).select(
+      "_id username email"
+    );
+    const newTask = {
+      ...task.toObject(),
+      user: req.user,
+      assignedTo: assignee,
+    };
+    //sending task with user and assigned to info
+    emit(io, String(req.user._id), "taskCreated", newTask);
+    emit(io, `task_${task._id}`, "taskCreated", newTask);
+    emit(io, String(task.assignedTo), "taskCreated", newTask);
     if (assignedTo && String(assignedTo) !== String(req.user._id)) {
       const message = `You were assigned a new task: "${task.title}"`;
       const notif = await Notification.create({
@@ -201,11 +210,18 @@ router.put("/:id", protect, async (req, res) => {
     if (assignedTo !== undefined) task.assignedTo = assignedTo || null;
 
     const updatedTask = await task.save();
-
-    emit(io, `task_${updatedTask._id}`, "taskUpdated", updatedTask);
-    emit(io, String(updatedTask.user), "taskUpdated", updatedTask);
+    const assignee = await User.findById(assignedTo).select(
+      "_id username email"
+    );
+    const newUpdatedTask = {
+      ...task.toObject(),
+      user: req.user,
+      assignedTo: assignee,
+    };
+    emit(io, `task_${updatedTask._id}`, "taskUpdated", newUpdatedTask);
+    emit(io, String(updatedTask.user), "taskUpdated", newUpdatedTask);
     if (updatedTask.assignedTo)
-      emit(io, String(updatedTask.assignedTo), "taskUpdated", updatedTask);
+      emit(io, String(updatedTask.assignedTo), "taskUpdated", newUpdatedTask);
 
     if (
       assignedTo &&
